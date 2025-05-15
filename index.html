@@ -1,0 +1,1781 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memory Match</title>
+    <style>
+        /* Core styles */
+        * {box-sizing: border-box; margin: 0; padding: 0;}
+        body {font-family: Arial, sans-serif; background-color: #f5f5f5; padding: 20px; max-width: 1200px; margin: 0 auto; color: #333;}
+        h1, h2 {text-align: center; margin-bottom: 20px;}
+        p {text-align: center; margin-bottom: 15px;}
+        .container {max-width: 800px; margin: 40px auto 0 auto; position: relative;}
+        
+        /* Coin Display */
+        .coin-display {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background-color: #27ae60 !important; /* green */
+            color: white;
+            padding: 8px 12px 8px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            z-index: 5;
+            gap: 6px;
+            min-width: 60px;
+        }
+        .coin-emoji {
+            font-size: 1.2em;
+            margin-right: 4px;
+        }
+        .coin-amount {
+            font-size: 1.1em;
+        }
+        .coin-plus-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 22px;
+            height: 22px;
+            background: #ffba00;
+            color: #fff;
+            border-radius: 50%;
+            font-size: 1.1em;
+            font-weight: bold;
+            margin-left: 4px;
+            cursor: pointer;
+            user-select: none;
+            border: 2px solid #fff;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+            transition: background 0.2s;
+        }
+        .coin-plus-btn:active {
+            background: #e0a500;
+        }
+        
+        /* Game header */
+        .game-header {background-color: white; padding: 15px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px;}
+        .game-info {display: flex; justify-content: space-between; margin-top: 10px; font-weight: bold;}
+        
+        /* Game board */
+        .game-board {display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 20px;}
+        
+        /* Card styles */
+        .card {
+            aspect-ratio: 1/1;
+            width: 100%;
+            height: auto;
+            background-color: #4a90e2;
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 2.5rem;
+            cursor: pointer;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.6s;
+        }
+        .card-front, .card-back {position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 8px; display: flex; justify-content: center; align-items: center;}
+        .card-front {background-color: white; border: 2px solid #4a90e2; transform: rotateY(180deg); color: #333;}
+        .card-back {background-color: #4a90e2; color: white;}
+        .card.flipped {transform: rotateY(180deg);}
+        .card.matched .card-front {border-color: #2ecc71; box-shadow: 0 0 10px #2ecc71;}
+        
+        /* Buttons and controls */
+        .controls {display: flex; justify-content: space-between; margin-top: 20px;}
+        .btn {padding: 10px 20px; background-color: #4a90e2; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; transition: background-color 0.3s, transform 0.1s;}
+        .btn:hover {background-color: #3a7bc8; transform: translateY(-2px);}
+        .btn:active {transform: translateY(1px);}
+        .btn.wide {width: 100%; padding: 15px; font-size: 1.2rem; border-radius: 100px; margin: 10px 0;}
+        .btn.reset {background: #e74c3c;}
+        .btn.reset:hover {background: #c0392b;}
+        .buy-text {display: none;}
+        .btn:hover .buy-text {display: inline;}
+        
+        /* Daily Challenge Button */
+        .daily-challenge-btn {display: block; width: 100%; padding: 15px; background-color: #ffba00; color: white; border: none; border-radius: 100px; cursor: pointer; font-weight: bold; font-size: 1.2rem; margin: 10px 0; transition: background-color 0.3s, transform 0.1s;}
+        .daily-challenge-btn:hover {background-color: #e0a500; transform: translateY(-2px);}
+        .daily-challenge-btn:active {transform: translateY(1px);}
+        .daily-challenge-btn:before {content: "📅"; margin-right: 10px;}
+        
+        /* Score Display */
+        .score-display {
+            background-color: #4a90e2;
+            color: white;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            z-index: 5;
+        }
+        
+        /* Combo Display */
+        .combo-display {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(46, 204, 113, 0.8);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            z-index: 50;
+            animation: fadeOut 1s forwards;
+        }
+        @keyframes fadeOut {
+            0% {opacity: 1;}
+            70% {opacity: 1;}
+            100% {opacity: 0;}
+        }
+        
+        /* Screens */
+        .home-screen {
+            text-align: center;
+            max-width: 500px;
+            margin: 70px auto 0 auto; /* more top margin */
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            position: relative;
+        }
+        .complete-screen {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+        .complete-screen.active {
+            display: flex;
+        }
+        .complete-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+        }
+        .game-screen {display: none;}
+        .game-screen.active {display: block;}
+        
+        /* Responsive design */
+        @media (max-width: 600px) {
+            .game-board {grid-template-columns: repeat(3, 1fr);}
+            .game-info {flex-direction: column; align-items: center; gap: 10px;}
+            .controls {flex-wrap: wrap; gap: 10px; justify-content: center;}
+            .btn {width: 48%;}
+            .home-screen {margin-top: 40px;}
+            .container {margin-top: 20px;}
+        }
+
+        .home-screen h1 {
+            margin-top: 50px;
+        }
+        .home-buttons {
+            margin-top: 30px;
+        }
+
+        .card.tutorial-highlight {
+            box-shadow: 0 0 0 4px #ffba00, 0 0 16px 4px #ffba0088;
+            animation: tutorialPulse 1s infinite alternate;
+            z-index: 100;
+        }
+        @keyframes tutorialPulse {
+            0% { box-shadow: 0 0 0 4px #ffba00, 0 0 16px 4px #ffba0088; }
+            100% { box-shadow: 0 0 0 8px #ffe066, 0 0 24px 8px #ffe06688; }
+        }
+        /* Toast Popup Styles */
+        .toast-popup {
+            position: fixed;
+            left: 50%;
+            bottom: 20%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.95);
+            color: #333;
+            border-radius: 10px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.18);
+            padding: 18px 32px;
+            font-size: 1.15em;
+            z-index: 9999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+        .toast-popup.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        /* Game Intro Popup Styles */
+        .game-intro-screen {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+        .game-intro-screen.active {
+            display: flex;
+        }
+        .game-intro-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+        }
+        /* Shop Screen Styles */
+        .shop-screen {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+        .shop-screen.active {
+            display: flex;
+        }
+        .shop-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            text-align: center;
+            max-width: 800px;
+            width: 90%;
+        }
+        .shop-title {
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            color: #4a90e2;
+        }
+        .shop-section {
+            margin: 0 0 20px 0;
+            padding: 15px 0;
+            border-radius: 8px;
+            background-color: #f8f9fa;
+        }
+        .shop-section:last-child {
+            margin-bottom: 0;
+        }
+        .shop-section-title {
+            font-size: 1.2em;
+            margin-bottom: 15px;
+            color: #333;
+        }
+        .shop-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .shop-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 15px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .shop-item-emoji {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+        .shop-item-details {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .shop-item-title {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        .shop-item-price {
+            color: #666;
+            font-size: 0.9em;
+        }
+        .shop-item-button {
+            padding: 8px 15px;
+            background-color: #4a90e2;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
+            width: 100%;
+            max-width: 120px;
+        }
+        .shop-item-button:hover {
+            background-color: #357abd;
+        }
+        .shop-item-button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .close-shop-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            font-size: 1.5em;
+            cursor: pointer;
+            color: #666;
+        }
+
+        .podium-display {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            align-items: flex-end;
+            height: 40px;
+            z-index: 10;
+        }
+
+        .podium-step {
+            width: 20px;
+            background: #4a90e2;
+            color: white;
+            text-align: center;
+            font-weight: bold;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px 4px 0 0;
+        }
+
+        .podium-step.first {
+            height: 40px;
+            background: #ffd700;
+        }
+
+        .podium-step.second {
+            height: 30px;
+            background: #c0c0c0;
+        }
+
+        .podium-step.third {
+            height: 20px;
+            background: #cd7f32;
+        }
+
+        .leaderboard-list {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+
+        .leaderboard-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            background: white;
+            margin-bottom: 8px;
+            border-radius: 6px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .leaderboard-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .leaderboard-rank {
+            width: 30px;
+            font-weight: bold;
+            color: #666;
+        }
+
+        .leaderboard-flag {
+            width: 30px;
+            text-align: center;
+            font-size: 1.2em;
+        }
+
+        .leaderboard-name {
+            flex: 1;
+            margin: 0 15px;
+        }
+
+        .leaderboard-score {
+            font-weight: bold;
+            color: #4a90e2;
+        }
+
+        .podium-display {
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .podium-display:hover {
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+<body>
+    <!-- Home Screen (Visible by default) -->
+    <div id="home-screen" class="home-screen">
+        <div class="podium-display">
+            <div class="podium-step second">2</div>
+            <div class="podium-step first">1</div>
+            <div class="podium-step third">3</div>
+        </div>
+        <div class="coin-display" id="home-coin-box">
+            <span class="coin-emoji">🪙</span>
+            <span id="home-coin-display" class="coin-amount">0</span>
+            <span class="coin-plus-btn" title="Shop">+</span>
+        </div>
+        <h1>Memory Match</h1>
+        <div class="home-buttons">
+            <button id="daily-challenge-btn" class="daily-challenge-btn">Daily Challenge</button>
+            <button id="start-game-btn" class="btn wide">Level 1</button>
+            <button id="reset-progress-btn" class="btn wide reset">Reset Progress</button>
+        </div>
+        <div style="margin-top: 20px; text-align: center;">
+            <button id="level-skip-btn" class="btn" style="background-color: #9b59b6;">Skip to Next Level</button>
+        </div>
+    </div>
+    
+    <!-- Game Screen -->
+    <div id="game-screen" class="game-screen">
+        <div class="container">
+            <div class="coin-display" id="game-coin-box">
+                <span class="coin-emoji">🪙</span>
+                <span id="game-coin-display" class="coin-amount">0</span>
+                <span class="coin-plus-btn" title="Shop">+</span>
+            </div>
+            <div id="score-display" class="score-display">Score: 0</div>
+            <div class="game-header">
+                <h2 id="game-title">Memory Match</h2>
+                <div class="game-info">
+                    <div id="level-display">Level 1</div>
+                    <div id="matches-display">Matches: 0</div>
+                    <div id="combo-counter">Combo: 0</div>
+                </div>
+            </div>
+            <!-- Target card UI for level 3 -->
+            <div id="target-card-container" style="display:none; text-align:center; margin-bottom:10px;">
+                <span>Find the match for this card: </span>
+                <span id="target-card" style="font-size:2.5rem;"></span>
+            </div>
+            <div id="game-board" class="game-board"></div>
+            <div class="controls">
+                <button id="back-btn" class="btn">Menu</button>
+                <button id="hint-btn" class="btn">💡 Hint (<span id="hints-count">1</span>) <span class="buy-text" style="font-size: 0.8em; opacity: 0.8;">Click to buy for 150 🪙</span></button>
+                <button id="peek-btn" class="btn">📸 Peek (<span id="peeks-count">1</span>) <span class="buy-text" style="font-size: 0.8em; opacity: 0.8;">Click to buy for 150 🪙</span></button>
+                <button id="restart-btn" class="btn">Restart</button>
+            </div>
+        </div>
+        <div id="combo-display" class="combo-display"></div>
+    </div>
+    
+    <!-- Game Complete Screen -->
+    <div id="complete-screen" class="complete-screen">
+        <div class="complete-content">
+            <h2 id="complete-title">Level Complete!</h2>
+            <p id="complete-level">Level: 1</p>
+            <p id="complete-score">Score: 0</p>
+            <p id="complete-matches">Matches: 0</p>
+            <div id="coin-reward-container" style="margin: 15px 0; background-color: #fff9e6; padding: 10px; border-radius: 8px; border: 2px dashed #ffba00;">
+                <p style="font-weight: bold; color: #e0a500;">Coins Earned:</p>
+                <p id="coins-earned" style="font-size: 1.5rem; margin: 5px 0;">+20 🪙</p>
+            </div>
+            <p id="complete-tip" style="font-style: italic; margin: 20px 0;">Memory games help exercise the brain and improve cognitive function.</p>
+            <div>
+                <button id="menu-btn" class="btn">Menu</button>
+                <button id="next-level-btn" class="btn">Next Level</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="tutorial-tooltip" style="display:none; position:fixed; z-index:200; background:#fff; color:#333; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.15); padding:14px 18px; font-size:1.1em; pointer-events:none; max-width:220px;"></div>
+
+    <!-- Toast Popup -->
+    <div id="toast-popup" class="toast-popup"></div>
+
+    <!-- Game Intro Screen -->
+    <div id="game-intro-screen" class="game-intro-screen">
+        <div class="game-intro-content">
+            <h2>Welcome to Memory Match!</h2>
+            <div id="intro-step-1">
+                <p>Step 1: Cards will be shown face up for a moment. Remember their positions!</p>
+                <div style="display: flex; flex-direction: column; align-items: center; gap: 10px; margin: 15px 0;">
+                    <div style="display: flex; gap: 10px;">
+                        <div style="background: white; color: #4a90e2; width: 100px; aspect-ratio: 1/1; border-radius: 8px; font-size: 300%; border: 2px solid #4a90e2; display: flex; align-items: center; justify-content: center;">🐶</div>
+                        <div style="background: white; color: #4a90e2; width: 100px; aspect-ratio: 1/1; border-radius: 8px; font-size: 300%; border: 2px solid #4a90e2; display: flex; align-items: center; justify-content: center;">🐱</div>
+                    </div>
+                    <div style="display: flex; gap: 10px;">
+                        <div style="background: white; color: #4a90e2; width: 100px; aspect-ratio: 1/1; border-radius: 8px; font-size: 300%; border: 2px solid #4a90e2; display: flex; align-items: center; justify-content: center;">🐱</div>
+                        <div style="background: white; color: #4a90e2; width: 100px; aspect-ratio: 1/1; border-radius: 8px; font-size: 300%; border: 2px solid #4a90e2; display: flex; align-items: center; justify-content: center;">🐶</div>
+                    </div>
+                </div>
+                <button id="continue-btn-1" class="btn">Continue</button>
+            </div>
+            <div id="intro-step-2" style="display: none;">
+                <p>Step 2: Cards will turn down. Click on a card to flip it over.</p>
+                <div style="display: flex; flex-direction: column; align-items: center; gap: 10px; margin: 15px 0;">
+                    <div style="display: flex; gap: 10px;">
+                        <div style="background: #4a90e2; color: white; width: 100px; aspect-ratio: 1/1; border-radius: 8px; font-size: 300%; display: flex; align-items: center; justify-content: center;">?</div>
+                        <div style="background: #4a90e2; color: white; width: 100px; aspect-ratio: 1/1; border-radius: 8px; font-size: 300%; display: flex; align-items: center; justify-content: center;">?</div>
+                    </div>
+                    <div style="display: flex; gap: 10px;">
+                        <div style="background: #4a90e2; color: white; width: 100px; aspect-ratio: 1/1; border-radius: 8px; font-size: 300%; display: flex; align-items: center; justify-content: center;">?</div>
+                        <div style="background: #4a90e2; color: white; width: 100px; aspect-ratio: 1/1; border-radius: 8px; font-size: 300%; display: flex; align-items: center; justify-content: center;">?</div>
+                    </div>
+                </div>
+                <button id="continue-btn-2" class="btn">Continue</button>
+            </div>
+            <div id="intro-step-3" style="display: none;">
+                <p>Step 3: Find the matching pair by clicking another card. If they match, they stay face up!</p>
+                <p>Match all the cards to finish the game!</p>
+                <div style="display: flex; flex-direction: column; align-items: center; gap: 10px; margin: 15px 0;">
+                    <div style="display: flex; gap: 10px;">
+                        <div style="background: #4a90e2; color: white; width: 100px; aspect-ratio: 1/1; border-radius: 8px; font-size: 300%; display: flex; align-items: center; justify-content: center;">?</div>
+                        <div style="background: white; color: #4a90e2; width: 100px; aspect-ratio: 1/1; border-radius: 8px; font-size: 300%; border: 2px solid #4a90e2; display: flex; align-items: center; justify-content: center;">🐶</div>
+                    </div>
+                    <div style="display: flex; gap: 10px;">
+                        <div style="background: white; color: #4a90e2; width: 100px; aspect-ratio: 1/1; border-radius: 8px; font-size: 300%; border: 2px solid #4a90e2; display: flex; align-items: center; justify-content: center;">🐶</div>
+                        <div style="background: #4a90e2; color: white; width: 100px; aspect-ratio: 1/1; border-radius: 8px; font-size: 300%; display: flex; align-items: center; justify-content: center;">?</div>
+                    </div>
+                </div>
+                <button id="got-it-btn" class="btn">Got it!</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Shop Screen -->
+    <div id="shop-screen" class="shop-screen">
+        <div class="shop-content">
+            <button id="close-shop-btn" class="close-shop-btn">×</button>
+            <h2 class="shop-title">Shop</h2>
+            
+            <div class="shop-section">
+                <div class="shop-item" style="flex-direction: row; justify-content: space-between; align-items: center; padding: 8px 20px;">
+                    <div style="display: flex; align-items: center; gap: 15px;">
+                        <div class="shop-item-emoji">🚫</div>
+                        <div class="shop-item-details">
+                            <div class="shop-item-title">Remove Ads</div>
+                        </div>
+                    </div>
+                    <button class="shop-item-button" onclick="purchaseRemoveAds()">$7.99</button>
+                </div>
+            </div>
+
+            <div class="shop-section">
+                <div class="shop-grid">
+                    <!-- Coins -->
+                    <div class="shop-section-title" style="grid-column: 1 / -1; margin-bottom: 10px;">Coins</div>
+                    <div class="shop-item">
+                        <div class="shop-item-emoji">🪙</div>
+                        <div class="shop-item-details">
+                            <div class="shop-item-title">1000</div>
+                        </div>
+                        <button class="shop-item-button" onclick="purchaseCoins(1000, 0.99)">$0.99</button>
+                    </div>
+                    <div class="shop-item">
+                        <div class="shop-item-emoji">🪙</div>
+                        <div class="shop-item-details">
+                            <div class="shop-item-title">4000</div>
+                        </div>
+                        <button class="shop-item-button" onclick="purchaseCoins(4000, 1.99)">$1.99</button>
+                    </div>
+                    <div class="shop-item">
+                        <div class="shop-item-emoji">🪙</div>
+                        <div class="shop-item-details">
+                            <div class="shop-item-title">9000</div>
+                        </div>
+                        <button class="shop-item-button" onclick="purchaseCoins(9000, 4.99)">$4.99</button>
+                    </div>
+
+                    <!-- Hints -->
+                    <div class="shop-section-title" style="grid-column: 1 / -1; margin-bottom: 10px;">Hints</div>
+                    <div class="shop-item">
+                        <div class="shop-item-emoji">💡</div>
+                        <div class="shop-item-details">
+                            <div class="shop-item-title">1</div>
+                        </div>
+                        <button class="shop-item-button" onclick="purchaseHints(1, 150)">150 🪙</button>
+                    </div>
+                    <div class="shop-item">
+                        <div class="shop-item-emoji">💡</div>
+                        <div class="shop-item-details">
+                            <div class="shop-item-title">10</div>
+                        </div>
+                        <button class="shop-item-button" onclick="purchaseHints(10, 1200)">1200 🪙</button>
+                    </div>
+                    <div class="shop-item">
+                        <div class="shop-item-emoji">💡</div>
+                        <div class="shop-item-details">
+                            <div class="shop-item-title">50</div>
+                        </div>
+                        <button class="shop-item-button" onclick="purchaseHints(50, 5000)">5000 🪙</button>
+                    </div>
+
+                    <!-- Peeks -->
+                    <div class="shop-section-title" style="grid-column: 1 / -1; margin-bottom: 10px;">Peek</div>
+                    <div class="shop-item">
+                        <div class="shop-item-emoji">📸</div>
+                        <div class="shop-item-details">
+                            <div class="shop-item-title">1</div>
+                        </div>
+                        <button class="shop-item-button" onclick="purchasePeeks(1, 150)">150 🪙</button>
+                    </div>
+                    <div class="shop-item">
+                        <div class="shop-item-emoji">📸</div>
+                        <div class="shop-item-details">
+                            <div class="shop-item-title">10</div>
+                        </div>
+                        <button class="shop-item-button" onclick="purchasePeeks(10, 1200)">1200 🪙</button>
+                    </div>
+                    <div class="shop-item">
+                        <div class="shop-item-emoji">📸</div>
+                        <div class="shop-item-details">
+                            <div class="shop-item-title">50</div>
+                        </div>
+                        <button class="shop-item-button" onclick="purchasePeeks(50, 5000)">5000 🪙</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Leaderboard Screen -->
+    <div id="leaderboard-screen" class="shop-screen">
+        <div class="shop-content">
+            <button id="close-leaderboard-btn" class="close-shop-btn">×</button>
+            <h2 class="shop-title">Leaderboard</h2>
+            
+            <div class="leaderboard-list">
+                <!-- Leaderboard items will be generated here -->
+            </div>
+        </div>
+    </div>
+
+<script>
+(function() {
+    // All animals available for the game (add more if you want more variety)
+    const allAnimals = [
+        '🐶', '🐱', '🐦', '🐸', '🐺', '🦁', '🐷', '🐬', '🐻', '🦊', '🐵', '🐙', '🐯',
+        '🦄', '🦥', '🐄', '🦉', '🦓', '🦒', '🐘', '🦦', '🦨', '🦡', '🦔', '🐢', '🐍', '🦎', '🦂',
+        '🦀', '🐋', '🦑', '🦐', '🦞', '🦧', '🦩', '🦚', '🦜', '🦢'
+    ];
+
+    // Dynamic level configuration
+    function getLevelConfig(level) {
+        level = Math.max(1, Math.min(level, 100));
+        const pairs = Math.min(3 + (level - 1), 17);
+        const totalCards = pairs * 2;
+        
+        // Exact layout configurations
+        let layout;
+        switch(totalCards) {
+            case 6: layout = { rows: 2, cols: 3 }; break;
+            case 8: layout = { rows: 3, cols: 3 }; break;
+            case 10: layout = { rows: 2, cols: 5 }; break;
+            case 12: layout = { rows: 3, cols: 4 }; break;
+            case 14: layout = { rows: 3, cols: 5 }; break;
+            case 16: layout = { rows: 4, cols: 4 }; break;
+            case 18: layout = { rows: 4, cols: 5 }; break;
+            case 20: layout = { rows: 4, cols: 5 }; break;
+            case 22: layout = { rows: 5, cols: 5 }; break;
+            case 24: layout = { rows: 6, cols: 4 }; break;
+            case 26: layout = { rows: 6, cols: 5 }; break;
+            case 28: layout = { rows: 6, cols: 5 }; break;
+            case 30: layout = { rows: 6, cols: 5 }; break;
+            case 32: layout = { rows: 7, cols: 5 }; break;
+            case 34: layout = { rows: 7, cols: 5 }; break;
+            default: layout = { rows: 4, cols: 4 }; // fallback
+        }
+
+        const previewTime = 3000;
+        const tip = "Keep going! Each level gets a bit harder.";
+        return { pairs, layout, previewTime, tip };
+    }
+
+    // Game state
+    let gameState = {
+        currentLevel: 1, 
+        cards: [], 
+        flippedCards: [], 
+        matchedPairs: 0,
+        matches: 0,
+        combo: 0,
+        score: 0,
+        gameActive: false, 
+        previewActive: false, 
+        peekActive: false,
+        comboShown: false
+    };
+
+    // Player data
+    let playerData = {
+        coins: 0,
+        hintsAvailable: 1,
+        peeksAvailable: 1,
+        maxLevel: 1,
+        currentLevel: 1
+    };
+
+    // Level 3 special mechanic
+    let level3TargetCard = null;
+    let level3TargetPairId = null;
+    let level3TargetCardId = null;
+    let level3AwaitingMatch = false;
+
+    // Tutorial variables
+    let tutorialActive = false;
+    let tutorialStep = 0;
+    let tutorialFirstCardId = null;
+    let tutorialPairCardId = null;
+
+    // DOM helpers
+    function getEl(id) {
+        return document.getElementById(id);
+    }
+    function queryEl(selector) {
+        return document.querySelector(selector);
+    }
+
+    // Initialize the game
+    function init() {
+        try {
+            const savedData = localStorage.getItem('memoryGameData');
+            if (savedData) {
+                playerData = JSON.parse(savedData);
+            } else {
+                playerData = {
+                    coins: 0,
+                    hintsAvailable: 1,
+                    peeksAvailable: 1,
+                    maxLevel: 1,
+                    currentLevel: 1
+                };
+            }
+        } catch (e) {
+            console.warn('Unable to access localStorage:', e);
+            playerData = {
+                coins: 0,
+                hintsAvailable: 1,
+                peeksAvailable: 1,
+                maxLevel: 1,
+                currentLevel: 1
+            };
+        }
+        updateCoinDisplays();
+        updateStartButtonText();
+        setupEventListeners();
+    }
+
+    function updateCoinDisplays() {
+        const homeCoins = getEl('home-coin-display');
+        const gameCoins = getEl('game-coin-display');
+        if (homeCoins) homeCoins.textContent = playerData.coins;
+        if (gameCoins) gameCoins.textContent = playerData.coins;
+    }
+
+    function updateStartButtonText() {
+        const startGameBtn = getEl('start-game-btn');
+        if (startGameBtn) {
+            startGameBtn.textContent = `Level ${playerData.currentLevel}`;
+        }
+    }
+
+    function savePlayerData() {
+        try {
+            localStorage.setItem('memoryGameData', JSON.stringify(playerData));
+        } catch (e) {
+            console.warn('Unable to save to localStorage:', e);
+        }
+    }
+
+    function setupEventListeners() {
+        const startGameBtn = getEl('start-game-btn');
+        if (startGameBtn) {
+            startGameBtn.addEventListener('click', () => {
+                startLevel(playerData.currentLevel);
+            });
+        }
+        const levelSkipBtn = getEl('level-skip-btn');
+        if (levelSkipBtn) {
+            levelSkipBtn.addEventListener('click', () => {
+                if (playerData.currentLevel < 100) {
+                    playerData.currentLevel++;
+                    updateStartButtonText();
+                    savePlayerData();
+                }
+            });
+        }
+        const dailyChallengeBtn = getEl('daily-challenge-btn');
+        if (dailyChallengeBtn) {
+            dailyChallengeBtn.addEventListener('click', () => {
+                const gameTitle = getEl('game-title');
+                const completeTitle = getEl('complete-title');
+                const levelDisplay = getEl('level-display');
+                if (gameTitle) gameTitle.textContent = "Daily Challenge";
+                if (completeTitle) completeTitle.textContent = "Daily Challenge Complete!";
+                if (levelDisplay) levelDisplay.textContent = "Daily Challenge";
+                startLevel(100, true);
+            });
+        }
+        const backBtn = getEl('back-btn');
+        if (backBtn) {
+            backBtn.addEventListener('click', goToMenu);
+        }
+        const restartBtn = getEl('restart-btn');
+        if (restartBtn) {
+            restartBtn.addEventListener('click', () => {
+                if (gameState.currentLevel) {
+                    startLevel(gameState.currentLevel);
+                }
+            });
+        }
+        const hintBtn = getEl('hint-btn');
+        if (hintBtn) {
+            hintBtn.addEventListener('click', () => {
+                if (playerData.hintsAvailable <= 0 && playerData.coins < 150) {
+                    showShop();
+                } else {
+                    useHint();
+                }
+            });
+        }
+        const peekBtn = getEl('peek-btn');
+        if (peekBtn) {
+            peekBtn.addEventListener('click', () => {
+                if (playerData.peeksAvailable <= 0 && playerData.coins < 150) {
+                    showShop();
+                } else {
+                    usePeek();
+                }
+            });
+        }
+        const menuBtn = getEl('menu-btn');
+        if (menuBtn) {
+            menuBtn.addEventListener('click', goToMenu);
+        }
+        const nextLevelBtn = getEl('next-level-btn');
+        if (nextLevelBtn) {
+            nextLevelBtn.addEventListener('click', () => {
+                const completeScreen = getEl('complete-screen');
+                if (completeScreen) {
+                    completeScreen.classList.remove('active');
+                }
+                if (gameState.currentLevel < 100) {
+                    startLevel(gameState.currentLevel + 1);
+                }
+            });
+        }
+        // Reset Progress Button
+        const resetBtn = getEl('reset-progress-btn');
+        if (resetBtn) {
+            resetBtn.addEventListener('click', () => {
+                localStorage.removeItem('memoryGameData');
+                location.reload();
+            });
+        }
+        // Add coins when "+" is clicked
+        const addCoinsHome = getEl('add-coins-home');
+        if (addCoinsHome) {
+            addCoinsHome.addEventListener('click', () => {
+                playerData.coins += 10;
+                updateCoinDisplays();
+                savePlayerData();
+            });
+        }
+        const addCoinsGame = getEl('add-coins-game');
+        if (addCoinsGame) {
+            addCoinsGame.addEventListener('click', () => {
+                playerData.coins += 10;
+                updateCoinDisplays();
+                savePlayerData();
+            });
+        }
+        // Continue buttons for game intro
+        const continueBtn1 = getEl('continue-btn-1');
+        if (continueBtn1) {
+            continueBtn1.addEventListener('click', () => {
+                getEl('intro-step-1').style.display = 'none';
+                getEl('intro-step-2').style.display = 'block';
+            });
+        }
+        const continueBtn2 = getEl('continue-btn-2');
+        if (continueBtn2) {
+            continueBtn2.addEventListener('click', () => {
+                getEl('intro-step-2').style.display = 'none';
+                getEl('intro-step-3').style.display = 'block';
+            });
+        }
+        // Got it! button for game intro
+        const gotItBtn = getEl('got-it-btn');
+        if (gotItBtn) {
+            gotItBtn.addEventListener('click', () => {
+                const gameIntroScreen = getEl('game-intro-screen');
+                if (gameIntroScreen) gameIntroScreen.classList.remove('active');
+            });
+        }
+
+        // Shop button listeners
+        const coinPlusBtns = document.querySelectorAll('.coin-plus-btn');
+        coinPlusBtns.forEach(btn => {
+            btn.addEventListener('click', showShop);
+        });
+
+        const closeShopBtn = getEl('close-shop-btn');
+        if (closeShopBtn) {
+            closeShopBtn.addEventListener('click', hideShop);
+        }
+
+        // Make podium clickable
+        const podiumDisplay = document.querySelector('.podium-display');
+        if (podiumDisplay) {
+            podiumDisplay.addEventListener('click', showLeaderboard);
+        }
+
+        // Close leaderboard button
+        const closeLeaderboardBtn = getEl('close-leaderboard-btn');
+        if (closeLeaderboardBtn) {
+            closeLeaderboardBtn.addEventListener('click', hideLeaderboard);
+        }
+    }
+
+    function goToMenu() {
+        const gameScreen = getEl('game-screen');
+        const completeScreen = getEl('complete-screen');
+        const homeScreen = getEl('home-screen');
+        if (gameScreen) gameScreen.classList.remove('active');
+        if (completeScreen) completeScreen.classList.remove('active');
+        if (homeScreen) homeScreen.style.display = 'block';
+        updateStartButtonText();
+    }
+
+    function startLevel(level, isDaily = false) {
+        const config = getLevelConfig(level);
+        if (!config) return;
+        gameState = {
+            currentLevel: level, 
+            cards: [], 
+            flippedCards: [], 
+            matchedPairs: 0,
+            matches: 0,
+            combo: 0,
+            score: 0,
+            gameActive: false, 
+            previewActive: true, 
+            peekActive: false,
+            comboShown: false
+        };
+        // Reset level 3 mechanic
+        level3TargetCard = null;
+        level3TargetPairId = null;
+        level3TargetCardId = null;
+        level3AwaitingMatch = false;
+
+        const levelDisplay = getEl('level-display');
+        const matchesDisplay = getEl('matches-display');
+        const comboCounter = getEl('combo-counter');
+        const scoreDisplay = getEl('score-display');
+        const hintsCount = getEl('hints-count');
+        const peeksCount = getEl('peeks-count');
+        const gameBoard = getEl('game-board');
+        const homeScreen = getEl('home-screen');
+        const gameScreen = getEl('game-screen');
+        if (levelDisplay && !isDaily) {
+            levelDisplay.textContent = `Level ${level}`;
+        }
+        if (matchesDisplay) matchesDisplay.textContent = "Matches: 0";
+        if (comboCounter) comboCounter.textContent = "Combo: 0";
+        if (scoreDisplay) scoreDisplay.textContent = "Score: 0";
+        if (hintsCount) hintsCount.textContent = playerData.hintsAvailable;
+        if (peeksCount) peeksCount.textContent = playerData.peeksAvailable;
+        if (gameBoard && config.layout) {
+            createCards(config);
+            gameBoard.style.gridTemplateColumns = `repeat(${config.layout.cols}, 1fr)`;
+        }
+        if (homeScreen) homeScreen.style.display = 'none';
+        if (gameScreen) gameScreen.classList.add('active');
+        // Hide target card UI by default
+        const targetCardContainer = getEl('target-card-container');
+        if (targetCardContainer) targetCardContainer.style.display = 'none';
+
+        // Show game intro popup only for level 1
+        const gameIntroScreen = getEl('game-intro-screen');
+        if (gameIntroScreen && level === 1) {
+            gameIntroScreen.classList.add('active');
+        } else {
+            // For other levels, start the game immediately
+            if (level === 3) {
+                setTimeout(() => {
+                    hideAllCards();
+                    gameState.previewActive = false;
+                    // Pick a random card to leave open
+                    const unmatched = gameState.cards.filter(card => !card.matched);
+                    const randomCard = unmatched[Math.floor(Math.random() * unmatched.length)];
+                    level3TargetCard = randomCard;
+                    level3TargetPairId = randomCard.pairId;
+                    level3TargetCardId = randomCard.id;
+                    level3AwaitingMatch = true;
+                    // Show the target card UI
+                    const targetCardEl = getEl('target-card');
+                    if (targetCardEl) targetCardEl.textContent = randomCard.animal;
+                    const targetCardContainer = getEl('target-card-container');
+                    if (targetCardContainer) targetCardContainer.style.display = 'block';
+                    // Flip the target card open
+                    randomCard.flipped = true;
+                    const cardEl = queryEl(`.card[data-id="${randomCard.id}"]`);
+                    if (cardEl) cardEl.classList.add('flipped');
+                    gameState.gameActive = true;
+                }, config.previewTime);
+            } else {
+                setTimeout(() => {
+                    hideAllCards();
+                    gameState.previewActive = false;
+                    gameState.gameActive = true;
+                }, config.previewTime);
+            }
+        }
+
+        // Wait for player to click 'Got it!' before proceeding
+        const gotItBtn = getEl('got-it-btn');
+        if (gotItBtn) {
+            gotItBtn.onclick = function() {
+                gameIntroScreen.classList.remove('active');
+                // Proceed with the game after 'Got it!' is clicked
+                if (level === 3) {
+                    setTimeout(() => {
+                        hideAllCards();
+                        gameState.previewActive = false;
+                        // Pick a random card to leave open
+                        const unmatched = gameState.cards.filter(card => !card.matched);
+                        const randomCard = unmatched[Math.floor(Math.random() * unmatched.length)];
+                        level3TargetCard = randomCard;
+                        level3TargetPairId = randomCard.pairId;
+                        level3TargetCardId = randomCard.id;
+                        level3AwaitingMatch = true;
+                        // Show the target card UI
+                        const targetCardEl = getEl('target-card');
+                        if (targetCardEl) targetCardEl.textContent = randomCard.animal;
+                        const targetCardContainer = getEl('target-card-container');
+                        if (targetCardContainer) targetCardContainer.style.display = 'block';
+                        // Flip the target card open
+                        randomCard.flipped = true;
+                        const cardEl = queryEl(`.card[data-id="${randomCard.id}"]`);
+                        if (cardEl) cardEl.classList.add('flipped');
+                        gameState.gameActive = true;
+                    }, config.previewTime);
+                } else if (level === 1) {
+                    setTimeout(() => {
+                        hideAllCards();
+                        gameState.previewActive = false;
+                        gameState.gameActive = true;
+                        // --- Tutorial Start ---
+                        tutorialActive = true;
+                        tutorialStep = 1;
+                        // Pick the first card and its pair
+                        const firstPairId = gameState.cards[0].pairId;
+                        const pairCards = gameState.cards.filter(card => card.pairId === firstPairId);
+                        tutorialFirstCardId = pairCards[0].id;
+                        tutorialPairCardId = pairCards[1].id;
+                        highlightCard(tutorialFirstCardId);
+                        showTutorialTooltip("Click a card to flip it over!", document.querySelector(`.card[data-id="${tutorialFirstCardId}"]`));
+                    }, config.previewTime);
+                } else {
+                    setTimeout(() => {
+                        hideAllCards();
+                        gameState.previewActive = false;
+                        gameState.gameActive = true;
+                    }, config.previewTime);
+                }
+            };
+        }
+    }
+
+    function createCards(config) {
+        const gameBoard = getEl('game-board');
+        if (!gameBoard) return;
+        gameBoard.innerHTML = '';
+        let levelAnimals = allAnimals.slice(0, config.pairs);
+        while (levelAnimals.length < config.pairs) {
+            levelAnimals = levelAnimals.concat(allAnimals).slice(0, config.pairs);
+        }
+        const cards = [];
+        for (let i = 0; i < config.pairs; i++) {
+            for (let j = 0; j < 2; j++) {
+                cards.push({
+                    id: cards.length,
+                    animal: levelAnimals[i],
+                    pairId: i,
+                    matched: false,
+                    flipped: true
+                });
+            }
+        }
+        for (let i = cards.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [cards[i], cards[j]] = [cards[j], cards[i]];
+        }
+        gameState.cards = cards;
+
+        // Calculate total spaces and empty spaces
+        const totalSpaces = config.layout.cols * config.layout.rows;
+        const emptySpaces = totalSpaces - cards.length;
+        
+        // Calculate center positions
+        const centerCol = Math.floor((config.layout.cols - 1) / 2);
+        const centerRow = Math.floor((config.layout.rows - 1) / 2);
+        
+        // Create the grid with cards and empty spaces
+        let cardIndex = 0;
+        for (let row = 0; row < config.layout.rows; row++) {
+            for (let col = 0; col < config.layout.cols; col++) {
+                const isCenter = row === centerRow && col === centerCol;
+                const isTopMiddle = row === 0 && col === centerCol;
+                const isBottomMiddle = row === config.layout.rows - 1 && col === centerCol;
+                const isMiddleMiddle = row === centerRow && col === centerCol;
+                const isCorner = (row === 0 || row === config.layout.rows - 1) && 
+                               (col === 0 || col === config.layout.cols - 1);
+                
+                let shouldBeEmpty = false;
+                
+                if (emptySpaces === 1 && isCenter) {
+                    // One empty space in center
+                    shouldBeEmpty = true;
+                } else if (emptySpaces === 2 && (isTopMiddle || isBottomMiddle)) {
+                    // Two empty spaces in middle of top and bottom rows
+                    shouldBeEmpty = true;
+                } else if (emptySpaces === 3 && (isTopMiddle || isMiddleMiddle || isBottomMiddle)) {
+                    // Three empty spaces in middle of top, middle, and bottom rows
+                    shouldBeEmpty = true;
+                } else if (emptySpaces === 4 && isCorner) {
+                    // Four empty spaces in corners
+                    shouldBeEmpty = true;
+                }
+                
+                if (shouldBeEmpty) {
+                    const emptyEl = document.createElement('div');
+                    emptyEl.className = 'card empty';
+                    emptyEl.style.visibility = 'hidden';
+                    gameBoard.appendChild(emptyEl);
+                } else if (cardIndex < cards.length) {
+                    const card = cards[cardIndex++];
+                    const cardEl = document.createElement('div');
+                    cardEl.className = 'card flipped';
+                    cardEl.dataset.id = card.id;
+                    cardEl.innerHTML = `
+                        <div class="card-front">${card.animal}</div>
+                        <div class="card-back">?</div>
+                    `;
+                    cardEl.addEventListener('click', () => handleCardClick(card.id));
+                    gameBoard.appendChild(cardEl);
+                }
+            }
+        }
+    }
+
+    function hideAllCards() {
+        gameState.cards.forEach(card => {
+            card.flipped = false;
+            const cardEl = queryEl(`.card[data-id="${card.id}"]`);
+            if (cardEl) cardEl.classList.remove('flipped');
+        });
+    }
+
+    function handleCardClick(cardId) {
+        // --- Tutorial logic for level 1 ---
+        if (tutorialActive) {
+            if (tutorialStep === 1) {
+                // Only allow the highlighted card
+                if (cardId !== tutorialFirstCardId) return;
+                // Flip the card
+                const card = gameState.cards.find(c => c.id === cardId);
+                card.flipped = true;
+                const cardEl = queryEl(`.card[data-id="${cardId}"]`);
+                if (cardEl) cardEl.classList.add('flipped');
+                tutorialStep = 2;
+                highlightCard(tutorialPairCardId);
+                showTutorialTooltip("Now, find the matching card!", document.querySelector(`.card[data-id="${tutorialPairCardId}"]`));
+                return;
+            }
+            if (tutorialStep === 2) {
+                // Only allow the matching pair
+                if (cardId !== tutorialPairCardId) {
+                    // Show gentle message
+                    const wrongEl = document.querySelector(`.card[data-id="${cardId}"]`);
+                    showTutorialTooltip("Try again! Find the matching animal.", wrongEl);
+                    setTimeout(() => {
+                        showTutorialTooltip("Now, find the matching card!", document.querySelector(`.card[data-id="${tutorialPairCardId}"]`));
+                    }, 1200);
+                    return;
+                }
+                // Flip the card and match
+                const card = gameState.cards.find(c => c.id === cardId);
+                card.flipped = true;
+                const cardEl = queryEl(`.card[data-id="${cardId}"]`);
+                if (cardEl) cardEl.classList.add('flipped');
+                // Mark both as matched
+                [tutorialFirstCardId, tutorialPairCardId].forEach(id => {
+                    const c = gameState.cards.find(card => card.id === id);
+                    c.matched = true;
+                    setTimeout(() => {
+                        const el = queryEl(`.card[data-id="${id}"]`);
+                        if (el) el.classList.add('matched');
+                    }, 300);
+                });
+                gameState.matchedPairs++;
+                gameState.matches++;
+                gameState.combo = 1;
+                const points = 100;
+                gameState.score += points;
+                showComboDisplay(points);
+                updateScore();
+                const matchesDisplay = getEl('matches-display');
+                if (matchesDisplay) matchesDisplay.textContent = `Matches: ${gameState.matches}`;
+                tutorialStep = 3;
+                clearTutorialHighlight();
+                showTutorialTooltip("Great! Now match the rest of the cards.");
+                setTimeout(() => {
+                    hideTutorialTooltip();
+                    tutorialActive = false;
+                }, 1800);
+                return;
+            }
+        }
+        // --- End tutorial logic ---
+
+        if (!gameState.gameActive || gameState.previewActive || gameState.peekActive) return;
+        const card = gameState.cards.find(c => c.id === cardId);
+        if (!card || card.flipped || card.matched) return;
+
+        // Show combo explanation after first successful match
+        if (gameState.matches === 1 && !gameState.comboShown && gameState.currentLevel === 1) {
+            showToast("Continue matching right to earn higher points by building your combo!", 4000);
+            gameState.comboShown = true;
+        }
+
+        // Special logic for level 3: must match the open card first
+        if (gameState.currentLevel === 3 && level3AwaitingMatch) {
+            // Don't allow clicking the open card itself
+            if (card.id === level3TargetCardId) return;
+            // Flip the selected card
+            card.flipped = true;
+            const cardEl = queryEl(`.card[data-id="${card.id}"]`);
+            if (cardEl) cardEl.classList.add('flipped');
+            // Check if it's the match
+            if (card.pairId === level3TargetPairId) {
+                // It's a match! Mark both as matched
+                card.matched = true;
+                level3TargetCard.matched = true;
+                setTimeout(() => {
+                    if (cardEl) cardEl.classList.add('matched');
+                    const targetCardEl = queryEl(`.card[data-id="${level3TargetCardId}"]`);
+                    if (targetCardEl) targetCardEl.classList.add('matched');
+                }, 300);
+                gameState.matchedPairs++;
+                gameState.matches++;
+                // Hide the target card UI
+                const targetCardContainer = getEl('target-card-container');
+                if (targetCardContainer) targetCardContainer.style.display = 'none';
+                // Reset level 3 mechanic
+                level3AwaitingMatch = false;
+                level3TargetCard = null;
+                level3TargetPairId = null;
+                level3TargetCardId = null;
+                // Continue normal play
+                gameState.combo = 1;
+                const points = 100;
+                gameState.score += points;
+                showComboDisplay(points);
+                updateScore();
+                const matchesDisplay = getEl('matches-display');
+                if (matchesDisplay) matchesDisplay.textContent = `Matches: ${gameState.matches}`;
+                // If all pairs matched, show complete
+                if (gameState.matchedPairs === getLevelConfig(gameState.currentLevel).pairs) {
+                    setTimeout(showCompleteScreen, 500);
+                }
+            } else {
+                // Not a match, flip back down after short delay
+                setTimeout(() => {
+                    card.flipped = false;
+                    if (cardEl) cardEl.classList.remove('flipped');
+                }, 800);
+            }
+            return;
+        }
+
+        // Normal game logic
+        if (card.flipped || card.matched || gameState.flippedCards.length >= 2) return;
+        card.flipped = true;
+        const cardEl = queryEl(`.card[data-id="${cardId}"]`);
+        if (cardEl) cardEl.classList.add('flipped');
+        gameState.flippedCards.push(card);
+
+        if (gameState.flippedCards.length === 2) {
+            if (gameState.flippedCards[0].pairId === gameState.flippedCards[1].pairId) {
+                matchCards(gameState.flippedCards);
+                gameState.combo++;
+                const points = 100 + (gameState.combo - 1) * 20;
+                gameState.score += points;
+                showComboDisplay(points);
+                updateScore();
+            } else {
+                gameState.combo = 0;
+                updateScore();
+                setTimeout(() => {
+                    gameState.flippedCards.forEach(card => {
+                        card.flipped = false;
+                        const cardEl = queryEl(`.card[data-id="${card.id}"]`);
+                        if (cardEl) cardEl.classList.remove('flipped');
+                    });
+                    gameState.flippedCards = [];
+                }, 1000);
+            }
+        }
+    }
+
+    function showComboDisplay(points) {
+        const comboDisplay = getEl('combo-display');
+        if (!comboDisplay) return;
+        comboDisplay.textContent = `+${points}`;
+        comboDisplay.style.display = 'block';
+        setTimeout(() => {
+            comboDisplay.style.animation = 'none';
+            void comboDisplay.offsetWidth;
+            comboDisplay.style.animation = 'fadeOut 1s forwards';
+        }, 0);
+        setTimeout(() => {
+            comboDisplay.style.display = 'none';
+        }, 1000);
+    }
+
+    function updateScore() {
+        const scoreDisplay = getEl('score-display');
+        const comboCounter = getEl('combo-counter');
+        if (scoreDisplay) {
+            scoreDisplay.textContent = `Score: ${gameState.score}`;
+        }
+        if (comboCounter) {
+            comboCounter.textContent = `Combo: ${gameState.combo}`;
+        }
+    }
+
+    function matchCards(cards) {
+        cards.forEach(card => {
+            card.matched = true;
+            setTimeout(() => {
+                const cardEl = queryEl(`.card[data-id="${card.id}"]`);
+                if (cardEl) cardEl.classList.add('matched');
+            }, 300);
+        });
+        gameState.matchedPairs++;
+        gameState.matches++;
+        gameState.flippedCards = [];
+        const matchesDisplay = getEl('matches-display');
+        if (matchesDisplay) {
+            matchesDisplay.textContent = `Matches: ${gameState.matches}`;
+        }
+        if (gameState.matchedPairs === getLevelConfig(gameState.currentLevel).pairs) {
+            setTimeout(showCompleteScreen, 500);
+        }
+    }
+
+    function showCompleteScreen() {
+        gameState.gameActive = false;
+        const coinsEarned = 20;
+        playerData.coins += coinsEarned;
+        updateCoinDisplays();
+        if (gameState.currentLevel > playerData.maxLevel) {
+            playerData.maxLevel = gameState.currentLevel;
+        }
+        if (gameState.currentLevel < 100) {
+            playerData.currentLevel = gameState.currentLevel + 1;
+        } else {
+            playerData.currentLevel = 1;
+        }
+        savePlayerData();
+        const completeLevel = getEl('complete-level');
+        const completeScore = getEl('complete-score');
+        const completeMatches = getEl('complete-matches');
+        const coinsEarnedEl = getEl('coins-earned');
+        const completeTip = getEl('complete-tip');
+        const completeScreen = getEl('complete-screen');
+        const nextLevelBtn = getEl('next-level-btn');
+        if (completeLevel) completeLevel.textContent = `Level: ${gameState.currentLevel}`;
+        if (completeScore) completeScore.textContent = `Score: ${gameState.score}`;
+        if (completeMatches) completeMatches.textContent = `Matches: ${gameState.matches}`;
+        if (coinsEarnedEl) coinsEarnedEl.textContent = `+${coinsEarned} 🪙`;
+        const config = getLevelConfig(gameState.currentLevel);
+        if (completeTip && config) completeTip.textContent = config.tip;
+        if (completeScreen) completeScreen.classList.add('active');
+        if (nextLevelBtn) {
+            if (gameState.currentLevel < 100) {
+                nextLevelBtn.style.display = 'inline-block';
+                playerData.currentLevel = gameState.currentLevel + 1;
+            } else {
+                nextLevelBtn.style.display = 'none';
+                playerData.currentLevel = 1;
+            }
+            savePlayerData();
+        }
+    }
+
+    function useHint() {
+        if (!gameState.gameActive || gameState.previewActive || gameState.peekActive) return;
+        if (playerData.hintsAvailable <= 0) {
+            if (playerData.coins >= 20) {
+                playerData.coins -= 20;
+                playerData.hintsAvailable += 1;
+                updateCoinDisplays();
+                const hintsCount = getEl('hints-count');
+                if (hintsCount) hintsCount.textContent = playerData.hintsAvailable;
+                const hintBtn = getEl('hint-btn');
+                if (hintBtn) {
+                    const originalText = hintBtn.innerHTML;
+                    hintBtn.innerHTML = "Hint Purchased!";
+                    setTimeout(() => {
+                        hintBtn.innerHTML = originalText;
+                    }, 1000);
+                }
+                return;
+            } else {
+                const hintBtn = getEl('hint-btn');
+                if (hintBtn) {
+                    const originalText = hintBtn.innerHTML;
+                    hintBtn.innerHTML = "Need 20 Coins!";
+                    setTimeout(() => {
+                        hintBtn.innerHTML = originalText;
+                    }, 1000);
+                }
+                return;
+            }
+        }
+
+        // --- SPECIAL CASE: Level 3, awaiting target match ---
+        if (gameState.currentLevel === 3 && level3AwaitingMatch) {
+            // Find the two cards with the target pairId
+            const targetCards = gameState.cards.filter(card => !card.matched && card.pairId === level3TargetPairId);
+            targetCards.forEach(card => {
+                card.flipped = true;
+                card.matched = true;
+                const cardEl = queryEl(`.card[data-id="${card.id}"]`);
+                if (cardEl) {
+                    cardEl.classList.add('flipped');
+                    setTimeout(() => cardEl.classList.add('matched'), 300);
+                }
+            });
+            gameState.matchedPairs++;
+            gameState.matches++;
+            const matchesDisplay = getEl('matches-display');
+            if (matchesDisplay) {
+                matchesDisplay.textContent = `Matches: ${gameState.matches}`;
+            }
+            gameState.combo = 1;
+            const points = 100;
+            gameState.score += points;
+            showComboDisplay(points);
+            updateScore();
+            playerData.hintsAvailable--;
+            const hintsCount = getEl('hints-count');
+            if (hintsCount) hintsCount.textContent = playerData.hintsAvailable;
+            // Hide the target card UI and reset special state
+            const targetCardContainer = getEl('target-card-container');
+            if (targetCardContainer) targetCardContainer.style.display = 'none';
+            level3AwaitingMatch = false;
+            level3TargetCard = null;
+            level3TargetPairId = null;
+            level3TargetCardId = null;
+            // If all pairs matched, show complete
+            if (gameState.matchedPairs === getLevelConfig(gameState.currentLevel).pairs) {
+                setTimeout(showCompleteScreen, 500);
+            }
+            return;
+        }
+        // --- END SPECIAL CASE ---
+
+        // --- NORMAL HINT LOGIC ---
+        const unmatchedCards = gameState.cards.filter(card => !card.matched);
+        if (unmatchedCards.length === 0) return;
+        const pairGroups = {};
+        unmatchedCards.forEach(card => {
+            if (!pairGroups[card.pairId]) pairGroups[card.pairId] = [];
+            pairGroups[card.pairId].push(card);
+        });
+        for (const pairId in pairGroups) {
+            if (pairGroups[pairId].length === 2) {
+                pairGroups[pairId].forEach(card => {
+                    card.flipped = true;
+                    card.matched = true;
+                    const cardEl = queryEl(`.card[data-id="${card.id}"]`);
+                    if (cardEl) {
+                        cardEl.classList.add('flipped');
+                        setTimeout(() => cardEl.classList.add('matched'), 300);
+                    }
+                });
+                gameState.matchedPairs++;
+                gameState.matches++;
+                const matchesDisplay = getEl('matches-display');
+                if (matchesDisplay) {
+                    matchesDisplay.textContent = `Matches: ${gameState.matches}`;
+                }
+                gameState.combo++;
+                const points = 100 + (gameState.combo - 1) * 20;
+                gameState.score += points;
+                showComboDisplay(points);
+                updateScore();
+                playerData.hintsAvailable--;
+                const hintsCount = getEl('hints-count');
+                if (hintsCount) hintsCount.textContent = playerData.hintsAvailable;
+                if (gameState.matchedPairs === getLevelConfig(gameState.currentLevel).pairs) {
+                    setTimeout(showCompleteScreen, 500);
+                }
+                return;
+            }
+        }
+    }
+
+    function usePeek() {
+        if (!gameState.gameActive || gameState.previewActive || gameState.peekActive) return;
+        if (playerData.peeksAvailable <= 0) {
+            if (playerData.coins >= 20) {
+                playerData.coins -= 20;
+                playerData.peeksAvailable += 1;
+                updateCoinDisplays();
+                const peeksCount = getEl('peeks-count');
+                if (peeksCount) peeksCount.textContent = playerData.peeksAvailable;
+                const peekBtn = getEl('peek-btn');
+                if (peekBtn) {
+                    const originalText = peekBtn.innerHTML;
+                    peekBtn.innerHTML = "Peek Purchased!";
+                    setTimeout(() => {
+                        peekBtn.innerHTML = originalText;
+                    }, 1000);
+                }
+                return;
+            } else {
+                const peekBtn = getEl('peek-btn');
+                if (peekBtn) {
+                    const originalText = peekBtn.innerHTML;
+                    peekBtn.innerHTML = "Need 20 Coins!";
+                    setTimeout(() => {
+                        peekBtn.innerHTML = originalText;
+                    }, 1000);
+                }
+                return;
+            }
+        }
+        gameState.peekActive = true;
+        playerData.peeksAvailable--;
+        const peeksCount = getEl('peeks-count');
+        if (peeksCount) peeksCount.textContent = playerData.peeksAvailable;
+        gameState.cards.forEach(card => {
+            if (!card.matched) {
+                card.flipped = true;
+                const cardEl = queryEl(`.card[data-id="${card.id}"]`);
+                if (cardEl) cardEl.classList.add('flipped');
+            }
+        });
+        setTimeout(() => {
+            gameState.cards.forEach(card => {
+                if (!card.matched) {
+                    card.flipped = false;
+                    const cardEl = queryEl(`.card[data-id="${card.id}"]`);
+                    if (cardEl) cardEl.classList.remove('flipped');
+                }
+            });
+            gameState.peekActive = false;
+            gameState.flippedCards = [];
+        }, 1000);
+    }
+
+    function showTutorialTooltip(message, cardEl) {
+        showToast(message);
+    }
+    function hideTutorialTooltip() {
+        // No-op for toast
+    }
+    function highlightCard(cardId) {
+        document.querySelectorAll('.card').forEach(el => el.classList.remove('tutorial-highlight'));
+        const el = document.querySelector(`.card[data-id="${cardId}"]`);
+        if (el) el.classList.add('tutorial-highlight');
+    }
+    function clearTutorialHighlight() {
+        document.querySelectorAll('.card').forEach(el => el.classList.remove('tutorial-highlight'));
+    }
+
+    // --- Toast Popup Helper ---
+    function showToast(message, duration = 3000) {
+        const toast = getEl('toast-popup');
+        if (!toast) return;
+        toast.innerHTML = message;
+        toast.classList.add('active');
+        clearTimeout(toast._timeout);
+        toast._timeout = setTimeout(() => {
+            toast.classList.remove('active');
+        }, duration);
+    }
+
+    // Shop functionality
+    function showShop() {
+        const shopScreen = getEl('shop-screen');
+        if (shopScreen) {
+            // Update shop items to reflect current counts
+            const hintsCount = getEl('hints-count');
+            const peeksCount = getEl('peeks-count');
+            if (hintsCount) hintsCount.textContent = playerData.hintsAvailable;
+            if (peeksCount) peeksCount.textContent = playerData.peeksAvailable;
+            shopScreen.classList.add('active');
+        }
+    }
+
+    function hideShop() {
+        const shopScreen = getEl('shop-screen');
+        if (shopScreen) shopScreen.classList.remove('active');
+    }
+
+    function purchaseCoins(amount, price) {
+        // Give coins to player for testing
+        playerData.coins += amount;
+        updateCoinDisplays();
+        savePlayerData();
+        showToast(`Added ${amount} coins!`);
+        hideShop();
+    }
+
+    function purchaseHints(amount, cost) {
+        if (playerData.coins >= cost) {
+            playerData.coins -= cost;
+            playerData.hintsAvailable += amount;
+            updateCoinDisplays();
+            const hintsCount = getEl('hints-count');
+            if (hintsCount) hintsCount.textContent = playerData.hintsAvailable;
+            savePlayerData();
+            showToast(`Purchased ${amount} hint${amount > 1 ? 's' : ''}!`);
+            hideShop();
+        } else {
+            showToast("Not enough coins!");
+        }
+    }
+
+    function purchasePeeks(amount, cost) {
+        if (playerData.coins >= cost) {
+            playerData.coins -= cost;
+            playerData.peeksAvailable += amount;
+            updateCoinDisplays();
+            const peeksCount = getEl('peeks-count');
+            if (peeksCount) peeksCount.textContent = playerData.peeksAvailable;
+            savePlayerData();
+            showToast(`Purchased ${amount} peek${amount > 1 ? 's' : ''}!`);
+            hideShop();
+        } else {
+            showToast("Not enough coins!");
+        }
+    }
+
+    function purchaseRemoveAds() {
+        // Implement in-app purchase logic here
+        showToast("Remove Ads purchase not implemented yet");
+    }
+
+    // Generate random player data
+    function generateRandomPlayers(count) {
+        const firstNames = ['Alex', 'Sam', 'Jordan', 'Taylor', 'Morgan', 'Casey', 'Riley', 'Jamie', 'Drew', 'Quinn'];
+        const lastNames = ['Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis', 'Rodriguez', 'Martinez'];
+        const flags = [
+            '\u{1F1FA}\u{1F1F8}', // USA
+            '\u{1F1EC}\u{1F1E7}', // UK
+            '\u{1F1E8}\u{1F1E6}', // Canada
+            '\u{1F1E6}\u{1F1FA}', // Australia
+            '\u{1F1E9}\u{1F1EA}', // Germany
+            '\u{1F1EB}\u{1F1F7}', // France
+            '\u{1F1EE}\u{1F1F9}', // Italy
+            '\u{1F1EA}\u{1F1F8}', // Spain
+            '\u{1F1EF}\u{1F1F5}', // Japan
+            '\u{1F1F0}\u{1F1F7}'  // South Korea
+        ];
+        const players = [];
+
+        for (let i = 0; i < count; i++) {
+            const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
+            const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
+            const score = Math.floor(Math.random() * 10000) + 1000;
+            const flag = flags[Math.floor(Math.random() * flags.length)];
+            players.push({
+                name: `${firstName} ${lastName}`,
+                score: score,
+                flag: flag
+            });
+        }
+
+        // Sort by score in descending order
+        return players.sort((a, b) => b.score - a.score);
+    }
+
+    // Show leaderboard
+    function showLeaderboard() {
+        const leaderboardScreen = getEl('leaderboard-screen');
+        const leaderboardList = document.querySelector('.leaderboard-list');
+        if (leaderboardScreen && leaderboardList) {
+            const players = generateRandomPlayers(10);
+            leaderboardList.innerHTML = players.map((player, index) => `
+                <div class="leaderboard-item">
+                    <div class="leaderboard-rank">#${index + 1}</div>
+                    <div class="leaderboard-flag">${player.flag}</div>
+                    <div class="leaderboard-name">${player.name}</div>
+                    <div class="leaderboard-score">${player.score}</div>
+                </div>
+            `).join('');
+            leaderboardScreen.classList.add('active');
+        }
+    }
+
+    // Hide leaderboard
+    function hideLeaderboard() {
+        const leaderboardScreen = getEl('leaderboard-screen');
+        if (leaderboardScreen) {
+            leaderboardScreen.classList.remove('active');
+        }
+    }
+
+    // Make functions globally available
+    window.purchaseCoins = purchaseCoins;
+    window.purchaseHints = purchaseHints;
+    window.purchasePeeks = purchasePeeks;
+    window.purchaseRemoveAds = purchaseRemoveAds;
+    window.showShop = showShop;
+    window.hideShop = hideShop;
+    window.showLeaderboard = showLeaderboard;
+    window.hideLeaderboard = hideLeaderboard;
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
+})();
+</script> 
+
+
+</body>
+</html>
