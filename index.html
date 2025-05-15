@@ -882,7 +882,7 @@
         if (restartBtn) {
             restartBtn.addEventListener('click', () => {
                 if (gameState.currentLevel) {
-                    startLevel(gameState.currentLevel);
+                    startLevel(gameState.currentLevel, gameState.isDaily);  // Pass isDaily flag when restarting
                 }
             });
         }
@@ -1027,7 +1027,8 @@
             gameActive: false, 
             previewActive: true, 
             peekActive: false,
-            comboShown: false
+            comboShown: false,
+            isDaily: isDaily  // Store whether this is a daily challenge
         };
         // Reset level 3 mechanic
         level3TargetCard = null;
