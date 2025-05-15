@@ -734,8 +734,8 @@
     // Player data
     let playerData = {
         coins: 0,
-        hintsAvailable: 1,
-        peeksAvailable: 1,
+        hintsAvailable: 3,
+        peeksAvailable: 3,
         maxLevel: 1,
         currentLevel: 1
     };
@@ -779,23 +779,23 @@
             const savedData = localStorage.getItem('memoryGameData');
             if (savedData) {
                 playerData = JSON.parse(savedData);
-                console.log('Loaded player data:', playerData); // Debug log
+                console.log('Loaded player data:', playerData);
             } else {
                 playerData = {
                     coins: 0,
-                    hintsAvailable: 1,
-                    peeksAvailable: 1,
+                    hintsAvailable: 3,
+                    peeksAvailable: 3,
                     maxLevel: 1,
                     currentLevel: 1
                 };
-                console.log('Created new player data:', playerData); // Debug log
+                console.log('Created new player data:', playerData);
             }
         } catch (e) {
             console.warn('Unable to access localStorage:', e);
             playerData = {
                 coins: 0,
-                hintsAvailable: 1,
-                peeksAvailable: 1,
+                hintsAvailable: 3,
+                peeksAvailable: 3,
                 maxLevel: 1,
                 currentLevel: 1
             };
@@ -929,8 +929,8 @@
                 localStorage.removeItem('memoryGameData');
                 playerData = {
                     coins: 0,
-                    hintsAvailable: 1,
-                    peeksAvailable: 1,
+                    hintsAvailable: 3,
+                    peeksAvailable: 3,
                     maxLevel: 1,
                     currentLevel: 1
                 };
