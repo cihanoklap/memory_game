@@ -752,6 +752,19 @@
     let tutorialFirstCardId = null;
     let tutorialPairCardId = null;
 
+    // Daily challenge configurations
+    const dailyChallengeLayouts = [
+        { pairs: 6, layout: { rows: 3, cols: 4 }, previewTime: 3000 },  // 12 cards
+        { pairs: 8, layout: { rows: 4, cols: 4 }, previewTime: 3000 },  // 16 cards
+        { pairs: 10, layout: { rows: 4, cols: 5 }, previewTime: 3000 }  // 20 cards
+    ];
+
+    function getDailyChallengeConfig() {
+        // Get a random layout from the available options
+        const randomIndex = Math.floor(Math.random() * dailyChallengeLayouts.length);
+        return dailyChallengeLayouts[randomIndex];
+    }
+
     // DOM helpers
     function getEl(id) {
         return document.getElementById(id);
@@ -766,6 +779,7 @@
             const savedData = localStorage.getItem('memoryGameData');
             if (savedData) {
                 playerData = JSON.parse(savedData);
+                console.log('Loaded player data:', playerData); // Debug log
             } else {
                 playerData = {
                     coins: 0,
@@ -774,6 +788,7 @@
                     maxLevel: 1,
                     currentLevel: 1
                 };
+                console.log('Created new player data:', playerData); // Debug log
             }
         } catch (e) {
             console.warn('Unable to access localStorage:', e);
@@ -787,6 +802,7 @@
         }
         updateCoinDisplays();
         updateStartButtonText();
+        updateDailyChallengeButton();
         setupEventListeners();
     }
 
@@ -801,6 +817,18 @@
         const startGameBtn = getEl('start-game-btn');
         if (startGameBtn) {
             startGameBtn.textContent = `Level ${playerData.currentLevel}`;
+        }
+    }
+
+    function updateDailyChallengeButton() {
+        const dailyChallengeBtn = getEl('daily-challenge-btn');
+        if (dailyChallengeBtn) {
+            console.log('Updating daily challenge button. maxLevel:', playerData.maxLevel); // Debug log
+            if (playerData.maxLevel > 1) {
+                dailyChallengeBtn.style.display = 'block';
+            } else {
+                dailyChallengeBtn.style.display = 'none';
+            }
         }
     }
 
@@ -824,6 +852,11 @@
             levelSkipBtn.addEventListener('click', () => {
                 if (playerData.currentLevel < 100) {
                     playerData.currentLevel++;
+                    // Update maxLevel if skipping to a higher level
+                    if (playerData.currentLevel > playerData.maxLevel) {
+                        playerData.maxLevel = playerData.currentLevel;
+                        updateDailyChallengeButton();
+                    }
                     updateStartButtonText();
                     savePlayerData();
                 }
@@ -894,6 +927,14 @@
         if (resetBtn) {
             resetBtn.addEventListener('click', () => {
                 localStorage.removeItem('memoryGameData');
+                playerData = {
+                    coins: 0,
+                    hintsAvailable: 1,
+                    peeksAvailable: 1,
+                    maxLevel: 1,
+                    currentLevel: 1
+                };
+                updateDailyChallengeButton();
                 location.reload();
             });
         }
@@ -973,7 +1014,7 @@
     }
 
     function startLevel(level, isDaily = false) {
-        const config = getLevelConfig(level);
+        const config = isDaily ? getDailyChallengeConfig() : getLevelConfig(level);
         if (!config) return;
         gameState = {
             currentLevel: level, 
@@ -1406,9 +1447,15 @@
         const coinsEarned = 20;
         playerData.coins += coinsEarned;
         updateCoinDisplays();
+        
+        // Update maxLevel if current level is higher
         if (gameState.currentLevel > playerData.maxLevel) {
+            console.log('Updating maxLevel from', playerData.maxLevel, 'to', gameState.currentLevel); // Debug log
             playerData.maxLevel = gameState.currentLevel;
+            updateDailyChallengeButton();
+            savePlayerData();
         }
+
         if (gameState.currentLevel < 100) {
             playerData.currentLevel = gameState.currentLevel + 1;
         } else {
