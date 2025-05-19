@@ -249,9 +249,11 @@
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
             background-color: rgba(0,0,0,0.5);
-            align-items: center;
+            align-items: flex-start;
             justify-content: center;
             z-index: 100;
+            overflow-y: auto;
+            padding: 20px 0;
         }
         .shop-screen.active {
             display: flex;
@@ -263,6 +265,7 @@
             text-align: center;
             max-width: 800px;
             width: 90%;
+            margin: 20px auto;
         }
         .shop-title {
             font-size: 1.5em;
@@ -702,7 +705,7 @@
             case 18: layout = { rows: 4, cols: 5 }; break;
             case 20: layout = { rows: 4, cols: 5 }; break;
             case 22: layout = { rows: 5, cols: 5 }; break;
-            case 24: layout = { rows: 6, cols: 4 }; break;
+            case 24: layout = { rows: 5, cols: 5 }; break;
             case 26: layout = { rows: 6, cols: 5 }; break;
             case 28: layout = { rows: 6, cols: 5 }; break;
             case 30: layout = { rows: 6, cols: 5 }; break;
