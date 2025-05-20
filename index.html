@@ -99,11 +99,97 @@
         .buy-text {display: none;}
         .btn:hover .buy-text {display: inline;}
         
+        /* Booster buttons */
+        .booster-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 15px 0;
+        }
+        .booster-btn {
+            background: none;
+            border: none;
+            color: #4a90e2;
+            font-size: 1.2em;
+            cursor: pointer;
+            padding: 8px 15px;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+        }
+        .booster-btn:hover {
+            background-color: rgba(74, 144, 226, 0.1);
+        }
+        .booster-btn .count {
+            font-weight: bold;
+            margin-left: 5px;
+        }
+        .booster-btn .emoji {
+            font-size: 1.8em;
+            vertical-align: middle;
+        }
+        .booster-btn.locked {
+            color: #999;
+            cursor: not-allowed;
+        }
+        .booster-btn.locked:hover {
+            background-color: transparent;
+        }
+        .booster-btn.locked .emoji {
+            opacity: 0.5;
+        }
+        @keyframes attentionShake {
+            0% { transform: scale(1); }
+            10% { transform: scale(1.1); }
+            20% { transform: scale(1.1) rotate(-5deg); }
+            30% { transform: scale(1.1) rotate(5deg); }
+            40% { transform: scale(1.1) rotate(-5deg); }
+            50% { transform: scale(1.1) rotate(5deg); }
+            60% { transform: scale(1.1) rotate(-5deg); }
+            70% { transform: scale(1.1) rotate(5deg); }
+            80% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        .booster-btn.attention {
+            animation: attentionShake 1s ease-in-out;
+        }
+        
         /* Daily Challenge Button */
-        .daily-challenge-btn {display: block; width: 100%; padding: 15px; background-color: #ffba00; color: white; border: none; border-radius: 100px; cursor: pointer; font-weight: bold; font-size: 1.2rem; margin: 10px 0; transition: background-color 0.3s, transform 0.1s;}
-        .daily-challenge-btn:hover {background-color: #e0a500; transform: translateY(-2px);}
-        .daily-challenge-btn:active {transform: translateY(1px);}
-        .daily-challenge-btn:before {content: "📅"; margin-right: 10px;}
+        .daily-challenge-btn {
+            background: none;
+            border: none;
+            color: #4a90e2;
+            font-size: 1.2em;
+            cursor: pointer;
+            padding: 8px 15px;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+            display: inline-block;
+        }
+        .daily-challenge-btn:hover {
+            background-color: rgba(74, 144, 226, 0.1);
+        }
+        .daily-challenge-btn .emoji {
+            font-size: 2.16em;  /* Increased from 1.8em by 20% */
+            display: block;
+            text-align: center;
+        }
+        .daily-challenge-btn .text {
+            font-size: 0.9em;  /* Increased from 0.75em by 20% */
+            font-weight: bold;
+            display: block;
+            text-align: center;
+            margin-top: 2px;
+        }
+        .daily-challenge-btn.locked {
+            color: #999;
+            cursor: not-allowed;
+        }
+        .daily-challenge-btn.locked:hover {
+            background-color: transparent;
+        }
+        .daily-challenge-btn.locked .emoji {
+            opacity: 0.5;
+        }
         
         /* Score Display */
         .score-display {
@@ -437,6 +523,74 @@
         .podium-display:hover {
             transform: scale(1.1);
         }
+
+        /* Task Screen Styles */
+        .task-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .task-item {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+        }
+        
+        .task-header {
+            margin-bottom: 10px;
+        }
+
+        .task-content {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .task-emoji {
+            font-size: 1.5em;
+        }
+        
+        .task-title {
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .task-check {
+            color: #2ecc71;
+            font-size: 1.2em;
+            margin-left: 4px;
+        }
+        
+        .task-progress {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .progress-bar {
+            flex: 1;
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: #4a90e2;
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+        
+        .progress-text {
+            font-size: 0.9em;
+            color: #666;
+            min-width: 40px;
+            text-align: right;
+        }
     </style>
 </head>
 <body>
@@ -453,8 +607,21 @@
             <span class="coin-plus-btn" title="Shop">+</span>
         </div>
         <h1>Memory Match</h1>
+        <div style="display: flex; justify-content: space-between; margin: -10px 0 20px 0;">
+            <button id="task-btn" class="daily-challenge-btn">
+                <div style="display: flex; flex-direction: column; align-items: center;">
+                    <span class="emoji">📝</span>
+                    <span class="text">Task</span>
+                </div>
+            </button>
+            <button id="daily-challenge-btn" class="daily-challenge-btn">
+                <div style="display: flex; flex-direction: column; align-items: center;">
+                    <span class="emoji">📅</span>
+                    <span class="text">Daily</span>
+                </div>
+            </button>
+        </div>
         <div class="home-buttons">
-            <button id="daily-challenge-btn" class="daily-challenge-btn">Daily Challenge</button>
             <button id="start-game-btn" class="btn wide">Level 1</button>
             <button id="reset-progress-btn" class="btn wide reset">Reset Progress</button>
         </div>
@@ -486,10 +653,12 @@
                 <span id="target-card" style="font-size:2.5rem;"></span>
             </div>
             <div id="game-board" class="game-board"></div>
+            <div class="booster-buttons">
+                <button id="hint-btn" class="booster-btn"><span class="emoji">💡</span> <span id="hints-count" class="count">0</span></button>
+                <button id="peek-btn" class="booster-btn"><span class="emoji">📸</span> <span id="peeks-count" class="count">0</span></button>
+            </div>
             <div class="controls">
                 <button id="back-btn" class="btn">Menu</button>
-                <button id="hint-btn" class="btn">💡 Hint (<span id="hints-count">1</span>) <span class="buy-text" style="font-size: 0.8em; opacity: 0.8;">Click to buy for 150 🪙</span></button>
-                <button id="peek-btn" class="btn">📸 Peek (<span id="peeks-count">1</span>) <span class="buy-text" style="font-size: 0.8em; opacity: 0.8;">Click to buy for 150 🪙</span></button>
                 <button id="restart-btn" class="btn">Restart</button>
             </div>
         </div>
@@ -504,13 +673,13 @@
             <p id="complete-score">Score: 0</p>
             <p id="complete-matches">Matches: 0</p>
             <div id="coin-reward-container" style="margin: 15px 0; background-color: #fff9e6; padding: 10px; border-radius: 8px; border: 2px dashed #ffba00;">
-                <p style="font-weight: bold; color: #e0a500;">Coins Earned:</p>
+                <p id="reward-title" style="font-weight: bold; color: #e0a500;">Coins Earned:</p>
                 <p id="coins-earned" style="font-size: 1.5rem; margin: 5px 0;">+20 🪙</p>
             </div>
             <p id="complete-tip" style="font-style: italic; margin: 20px 0;">Memory games help exercise the brain and improve cognitive function.</p>
-            <div>
-                <button id="menu-btn" class="btn">Menu</button>
-                <button id="next-level-btn" class="btn">Next Level</button>
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                <button id="collect-x2-btn" class="btn wide" style="display: none; background-color: #ffba00;">Collect x2</button>
+                <button id="collect-btn" class="btn wide">Collect</button>
             </div>
         </div>
     </div>
@@ -678,6 +847,64 @@
         </div>
     </div>
 
+    <!-- Task Screen -->
+    <div id="task-screen" class="shop-screen">
+        <div class="shop-content">
+            <button id="close-task-btn" class="close-shop-btn">×</button>
+            <h2 class="shop-title">Task</h2>
+            
+            <div class="task-list">
+                <div class="task-item">
+                    <div class="task-header">
+                        <div class="task-content">
+                            <span class="task-emoji">🎯</span>
+                            <span class="task-title">Match 10 times</span>
+                            <span id="match-check" class="task-check" style="display: none;">✅</span>
+                        </div>
+                    </div>
+                    <div class="task-progress">
+                        <div class="progress-bar">
+                            <div id="match-progress" class="progress-fill" style="width: 0%"></div>
+                        </div>
+                        <span id="match-count" class="progress-text">0/10</span>
+                    </div>
+                </div>
+                
+                <div class="task-item">
+                    <div class="task-header">
+                        <div class="task-content">
+                            <span class="task-emoji">🏆</span>
+                            <span class="task-title">Win 5 levels</span>
+                            <span id="win-check" class="task-check" style="display: none;">✅</span>
+                        </div>
+                    </div>
+                    <div class="task-progress">
+                        <div class="progress-bar">
+                            <div id="win-progress" class="progress-fill" style="width: 0%"></div>
+                        </div>
+                        <span id="win-count" class="progress-text">0/5</span>
+                    </div>
+                </div>
+                
+                <div class="task-item">
+                    <div class="task-header">
+                        <div class="task-content">
+                            <span class="task-emoji">✨</span>
+                            <span class="task-title">Use 1 hint or peek</span>
+                            <span id="boost-check" class="task-check" style="display: none;">✅</span>
+                        </div>
+                    </div>
+                    <div class="task-progress">
+                        <div class="progress-bar">
+                            <div id="boost-progress" class="progress-fill" style="width: 0%"></div>
+                        </div>
+                        <span id="boost-count" class="progress-text">0/1</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
 <script>
 (function() {
     // All animals available for the game (add more if you want more variety)
@@ -737,10 +964,16 @@
     // Player data
     let playerData = {
         coins: 0,
-        hintsAvailable: 3,
-        peeksAvailable: 3,
+        hintsAvailable: 0,
+        peeksAvailable: 0,
         maxLevel: 1,
-        currentLevel: 1
+        currentLevel: 1,
+        tasks: {
+            matches: 0,
+            wins: 0,
+            boosts: 0,
+            lastReset: new Date().toDateString()
+        }
     };
 
     // Level 3 special mechanic
@@ -782,14 +1015,38 @@
             const savedData = localStorage.getItem('memoryGameData');
             if (savedData) {
                 playerData = JSON.parse(savedData);
+                // Initialize task data if it doesn't exist
+                if (!playerData.tasks) {
+                    playerData.tasks = {
+                        matches: 0,
+                        wins: 0,
+                        boosts: 0,
+                        lastReset: new Date().toDateString()
+                    };
+                }
+                // Reset tasks if it's a new day
+                if (playerData.tasks.lastReset !== new Date().toDateString()) {
+                    playerData.tasks = {
+                        matches: 0,
+                        wins: 0,
+                        boosts: 0,
+                        lastReset: new Date().toDateString()
+                    };
+                }
                 console.log('Loaded player data:', playerData);
             } else {
                 playerData = {
                     coins: 0,
-                    hintsAvailable: 3,
-                    peeksAvailable: 3,
+                    hintsAvailable: 0,
+                    peeksAvailable: 0,
                     maxLevel: 1,
-                    currentLevel: 1
+                    currentLevel: 1,
+                    tasks: {
+                        matches: 0,
+                        wins: 0,
+                        boosts: 0,
+                        lastReset: new Date().toDateString()
+                    }
                 };
                 console.log('Created new player data:', playerData);
             }
@@ -797,15 +1054,22 @@
             console.warn('Unable to access localStorage:', e);
             playerData = {
                 coins: 0,
-                hintsAvailable: 3,
-                peeksAvailable: 3,
+                hintsAvailable: 0,
+                peeksAvailable: 0,
                 maxLevel: 1,
-                currentLevel: 1
+                currentLevel: 1,
+                tasks: {
+                    matches: 0,
+                    wins: 0,
+                    boosts: 0,
+                    lastReset: new Date().toDateString()
+                }
             };
         }
         updateCoinDisplays();
         updateStartButtonText();
         updateDailyChallengeButton();
+        updateTaskProgress();
         setupEventListeners();
     }
 
@@ -825,12 +1089,14 @@
 
     function updateDailyChallengeButton() {
         const dailyChallengeBtn = getEl('daily-challenge-btn');
-        if (dailyChallengeBtn) {
-            console.log('Updating daily challenge button. maxLevel:', playerData.maxLevel); // Debug log
-            if (playerData.maxLevel > 1) {
+        const taskBtn = getEl('task-btn');
+        if (dailyChallengeBtn && taskBtn) {
+            if (playerData.maxLevel > 2) {
                 dailyChallengeBtn.style.display = 'block';
+                taskBtn.style.display = 'block';
             } else {
                 dailyChallengeBtn.style.display = 'none';
+                taskBtn.style.display = 'none';
             }
         }
     }
@@ -854,6 +1120,23 @@
         if (levelSkipBtn) {
             levelSkipBtn.addEventListener('click', () => {
                 if (playerData.currentLevel < 100) {
+                    // Grant boosters for level 2 if skipping to level 3 or higher
+                    if (playerData.currentLevel === 2) {
+                        playerData.hintsAvailable += 3;
+                        playerData.peeksAvailable += 3;
+                    }
+                    // Grant boosters for level 4 if skipping to level 5 or higher
+                    if (playerData.currentLevel === 4) {
+                        playerData.hintsAvailable++;
+                        playerData.peeksAvailable++;
+                    }
+                    
+                    // Count skipped level as a win for tasks if it's the same day and not already completed
+                    if (playerData.tasks.lastReset === new Date().toDateString() && playerData.tasks.wins < 5) {
+                        playerData.tasks.wins++;
+                        updateTaskProgress();
+                    }
+                    
                     playerData.currentLevel++;
                     // Update maxLevel if skipping to a higher level
                     if (playerData.currentLevel > playerData.maxLevel) {
@@ -892,6 +1175,7 @@
         const hintBtn = getEl('hint-btn');
         if (hintBtn) {
             hintBtn.addEventListener('click', () => {
+                if (gameState.currentLevel <= 2) return; // Don't do anything if locked
                 if (playerData.hintsAvailable <= 0 && playerData.coins < 150) {
                     showShop();
                 } else {
@@ -902,6 +1186,7 @@
         const peekBtn = getEl('peek-btn');
         if (peekBtn) {
             peekBtn.addEventListener('click', () => {
+                if (gameState.currentLevel <= 2) return; // Don't do anything if locked
                 if (playerData.peeksAvailable <= 0 && playerData.coins < 150) {
                     showShop();
                 } else {
@@ -932,10 +1217,16 @@
                 localStorage.removeItem('memoryGameData');
                 playerData = {
                     coins: 0,
-                    hintsAvailable: 3,
-                    peeksAvailable: 3,
+                    hintsAvailable: 0,
+                    peeksAvailable: 0,
                     maxLevel: 1,
-                    currentLevel: 1
+                    currentLevel: 1,
+                    tasks: {
+                        matches: 0,
+                        wins: 0,
+                        boosts: 0,
+                        lastReset: new Date().toDateString()
+                    }
                 };
                 updateDailyChallengeButton();
                 location.reload();
@@ -1004,6 +1295,27 @@
         if (closeLeaderboardBtn) {
             closeLeaderboardBtn.addEventListener('click', hideLeaderboard);
         }
+
+        const taskBtn = getEl('task-btn');
+        if (taskBtn) {
+            taskBtn.addEventListener('click', () => {
+                const taskScreen = getEl('task-screen');
+                if (taskScreen) {
+                    updateTaskProgress();
+                    taskScreen.classList.add('active');
+                }
+            });
+        }
+
+        const closeTaskBtn = getEl('close-task-btn');
+        if (closeTaskBtn) {
+            closeTaskBtn.addEventListener('click', () => {
+                const taskScreen = getEl('task-screen');
+                if (taskScreen) {
+                    taskScreen.classList.remove('active');
+                }
+            });
+        }
     }
 
     function goToMenu() {
@@ -1017,6 +1329,9 @@
     }
 
     function startLevel(level, isDaily = false) {
+        // Reset inactivity timer when starting a new level
+        resetInactivityTimer();
+        
         const config = isDaily ? getDailyChallengeConfig() : getLevelConfig(level);
         if (!config) return;
         gameState = {
@@ -1045,17 +1360,39 @@
         const scoreDisplay = getEl('score-display');
         const hintsCount = getEl('hints-count');
         const peeksCount = getEl('peeks-count');
+        const hintBtn = getEl('hint-btn');
+        const peekBtn = getEl('peek-btn');
         const gameBoard = getEl('game-board');
         const homeScreen = getEl('home-screen');
         const gameScreen = getEl('game-screen');
+
+        // Update booster buttons based on level
+        if (level <= 2) {
+            if (hintBtn) {
+                hintBtn.classList.add('locked');
+                hintBtn.querySelector('.count').textContent = '🔒';
+            }
+            if (peekBtn) {
+                peekBtn.classList.add('locked');
+                peekBtn.querySelector('.count').textContent = '🔒';
+            }
+        } else {
+            if (hintBtn) {
+                hintBtn.classList.remove('locked');
+                hintBtn.querySelector('.count').textContent = playerData.hintsAvailable;
+            }
+            if (peekBtn) {
+                peekBtn.classList.remove('locked');
+                peekBtn.querySelector('.count').textContent = playerData.peeksAvailable;
+            }
+        }
+
         if (levelDisplay && !isDaily) {
             levelDisplay.textContent = `Level ${level}`;
         }
         if (matchesDisplay) matchesDisplay.textContent = "Matches: 0";
         if (comboCounter) comboCounter.textContent = "Combo: 0";
         if (scoreDisplay) scoreDisplay.textContent = "Score: 0";
-        if (hintsCount) hintsCount.textContent = playerData.hintsAvailable;
-        if (peeksCount) peeksCount.textContent = playerData.peeksAvailable;
         if (gameBoard && config.layout) {
             createCards(config);
             gameBoard.style.gridTemplateColumns = `repeat(${config.layout.cols}, 1fr)`;
@@ -1249,6 +1586,9 @@
     }
 
     function handleCardClick(cardId) {
+        // Reset inactivity timer when a card is clicked
+        resetInactivityTimer();
+        
         // --- Tutorial logic for level 1 ---
         if (tutorialActive) {
             if (tutorialStep === 1) {
@@ -1441,6 +1781,12 @@
         if (matchesDisplay) {
             matchesDisplay.textContent = `Matches: ${gameState.matches}`;
         }
+        // Update task progress only if not already completed
+        if (playerData.tasks.matches < 10) {
+            playerData.tasks.matches++;
+            updateTaskProgress();
+            savePlayerData();
+        }
         if (gameState.matchedPairs === getLevelConfig(gameState.currentLevel).pairs) {
             setTimeout(showCompleteScreen, 500);
         }
@@ -1448,9 +1794,38 @@
 
     function showCompleteScreen() {
         gameState.gameActive = false;
-        const coinsEarned = 20;
-        playerData.coins += coinsEarned;
-        updateCoinDisplays();
+        
+        // Update task progress for wins only if not already completed
+        if (playerData.tasks.wins < 5) {
+            playerData.tasks.wins++;
+            updateTaskProgress();
+        }
+        
+        // Give boosters at the end of level 2 and 4
+        if (gameState.currentLevel === 2) {
+            // Give 3 of each booster
+            playerData.hintsAvailable += 3;
+            playerData.peeksAvailable += 3;
+            const hintsCount = getEl('hints-count');
+            const peeksCount = getEl('peeks-count');
+            if (hintsCount) hintsCount.textContent = playerData.hintsAvailable;
+            if (peeksCount) peeksCount.textContent = playerData.peeksAvailable;
+            showToast("You earned 3 Hints 💡 and 3 Peeks 📸!");
+        } else if (gameState.currentLevel === 4) {
+            // Give 1 of each booster
+            playerData.hintsAvailable++;
+            playerData.peeksAvailable++;
+            const hintsCount = getEl('hints-count');
+            const peeksCount = getEl('peeks-count');
+            if (hintsCount) hintsCount.textContent = playerData.hintsAvailable;
+            if (peeksCount) peeksCount.textContent = playerData.peeksAvailable;
+            showToast("You earned 1 Hint 💡 and 1 Peek 📸!");
+        } else {
+            // Give coins for other levels
+            const coinsEarned = 20;
+            playerData.coins += coinsEarned;
+            updateCoinDisplays();
+        }
         
         // Update maxLevel if current level is higher
         if (gameState.currentLevel > playerData.maxLevel) {
@@ -1470,30 +1845,76 @@
         const completeScore = getEl('complete-score');
         const completeMatches = getEl('complete-matches');
         const coinsEarnedEl = getEl('coins-earned');
+        const rewardTitle = getEl('reward-title');
+        const collectX2Btn = getEl('collect-x2-btn');
         const completeTip = getEl('complete-tip');
         const completeScreen = getEl('complete-screen');
-        const nextLevelBtn = getEl('next-level-btn');
+        const collectBtn = getEl('collect-btn');
+        
         if (completeLevel) completeLevel.textContent = `Level: ${gameState.currentLevel}`;
         if (completeScore) completeScore.textContent = `Score: ${gameState.score}`;
         if (completeMatches) completeMatches.textContent = `Matches: ${gameState.matches}`;
-        if (coinsEarnedEl) coinsEarnedEl.textContent = `+${coinsEarned} 🪙`;
+        
+        if (gameState.currentLevel === 2) {
+            if (rewardTitle) rewardTitle.textContent = "Boosters Earned:";
+            if (coinsEarnedEl) coinsEarnedEl.textContent = "3 💡 + 3 📸";
+            if (collectX2Btn) collectX2Btn.style.display = 'none';
+        } else if (gameState.currentLevel === 4) {
+            if (rewardTitle) rewardTitle.textContent = "Boosters Earned:";
+            if (coinsEarnedEl) coinsEarnedEl.textContent = "1 💡 + 1 📸";
+            if (collectX2Btn) {
+                collectX2Btn.style.display = 'block';
+                collectX2Btn.onclick = function() {
+                    // Double the boosters
+                    playerData.hintsAvailable++;
+                    playerData.peeksAvailable++;
+                    const hintsCount = getEl('hints-count');
+                    const peeksCount = getEl('peeks-count');
+                    if (hintsCount) hintsCount.textContent = playerData.hintsAvailable;
+                    if (peeksCount) peeksCount.textContent = playerData.peeksAvailable;
+                    showToast("Doubled your boosters! 2 💡 + 2 📸");
+                    if (coinsEarnedEl) coinsEarnedEl.textContent = "2 💡 + 2 📸";
+                    savePlayerData();
+                    
+                    // Move to next level
+                    if (gameState.currentLevel < 100) {
+                        playerData.currentLevel = gameState.currentLevel + 1;
+                    } else {
+                        playerData.currentLevel = 1;
+                    }
+                    savePlayerData();
+                    completeScreen.classList.remove('active');
+                    startLevel(playerData.currentLevel);
+                };
+            }
+        } else {
+            if (rewardTitle) rewardTitle.textContent = "Coins Earned:";
+            if (coinsEarnedEl) coinsEarnedEl.textContent = `+20 🪙`;
+            if (collectX2Btn) collectX2Btn.style.display = 'none';
+        }
+        
         const config = getLevelConfig(gameState.currentLevel);
         if (completeTip && config) completeTip.textContent = config.tip;
         if (completeScreen) completeScreen.classList.add('active');
-        if (nextLevelBtn) {
-            if (gameState.currentLevel < 100) {
-                nextLevelBtn.style.display = 'inline-block';
-                playerData.currentLevel = gameState.currentLevel + 1;
-            } else {
-                nextLevelBtn.style.display = 'none';
-                playerData.currentLevel = 1;
-            }
-            savePlayerData();
+        
+        if (collectBtn) {
+            collectBtn.onclick = function() {
+                // Move to next level
+                if (gameState.currentLevel < 100) {
+                    playerData.currentLevel = gameState.currentLevel + 1;
+                } else {
+                    playerData.currentLevel = 1;
+                }
+                savePlayerData();
+                completeScreen.classList.remove('active');
+                startLevel(playerData.currentLevel);
+            };
         }
     }
 
     function useHint() {
         if (!gameState.gameActive || gameState.previewActive || gameState.peekActive) return;
+        if (gameState.currentLevel <= 2) return; // Disable hints for first two levels
         if (playerData.hintsAvailable <= 0) {
             if (playerData.coins >= 20) {
                 playerData.coins -= 20;
@@ -1604,10 +2025,18 @@
                 return;
             }
         }
+        // Update task progress only if not already completed
+        if (playerData.tasks.boosts < 1) {
+            playerData.tasks.boosts++;
+            updateTaskProgress();
+            savePlayerData();
+        }
+        // Rest of the existing useHint code...
     }
 
     function usePeek() {
         if (!gameState.gameActive || gameState.previewActive || gameState.peekActive) return;
+        if (gameState.currentLevel <= 2) return; // Disable peeks for first two levels
         if (playerData.peeksAvailable <= 0) {
             if (playerData.coins >= 20) {
                 playerData.coins -= 20;
@@ -1649,6 +2078,10 @@
         });
         setTimeout(() => {
             gameState.cards.forEach(card => {
+                // For level 3, keep the target card open
+                if (gameState.currentLevel === 3 && level3AwaitingMatch && card.id === level3TargetCardId) {
+                    return;
+                }
                 if (!card.matched) {
                     card.flipped = false;
                     const cardEl = queryEl(`.card[data-id="${card.id}"]`);
@@ -1658,6 +2091,13 @@
             gameState.peekActive = false;
             gameState.flippedCards = [];
         }, 1000);
+        // Update task progress only if not already completed
+        if (playerData.tasks.boosts < 1) {
+            playerData.tasks.boosts++;
+            updateTaskProgress();
+            savePlayerData();
+        }
+        // Rest of the existing usePeek code...
     }
 
     function showTutorialTooltip(message, cardEl) {
@@ -1818,6 +2258,77 @@
     window.hideShop = hideShop;
     window.showLeaderboard = showLeaderboard;
     window.hideLeaderboard = hideLeaderboard;
+
+    // Add these new functions for inactivity tracking
+    let inactivityTimer = null;
+    let lastActionTime = Date.now();
+
+    function resetInactivityTimer() {
+        lastActionTime = Date.now();
+        if (inactivityTimer) {
+            clearTimeout(inactivityTimer);
+        }
+        inactivityTimer = setTimeout(checkInactivity, 10000);
+    }
+
+    function checkInactivity() {
+        const currentTime = Date.now();
+        if (currentTime - lastActionTime >= 10000 && gameState.gameActive && !gameState.previewActive) {
+            const hintBtn = getEl('hint-btn');
+            const peekBtn = getEl('peek-btn');
+            
+            if (hintBtn && !hintBtn.classList.contains('locked')) {
+                hintBtn.classList.add('attention');
+                setTimeout(() => hintBtn.classList.remove('attention'), 1000);
+            }
+            if (peekBtn && !peekBtn.classList.contains('locked')) {
+                peekBtn.classList.add('attention');
+                setTimeout(() => peekBtn.classList.remove('attention'), 1000);
+            }
+            // Set up the next check
+            inactivityTimer = setTimeout(checkInactivity, 10000);
+        }
+    }
+
+    // Add task progress update functions
+    function updateTaskProgress() {
+        const matchProgress = getEl('match-progress');
+        const matchCount = getEl('match-count');
+        const matchCheck = getEl('match-check');
+        const winProgress = getEl('win-progress');
+        const winCount = getEl('win-count');
+        const winCheck = getEl('win-check');
+        const boostProgress = getEl('boost-progress');
+        const boostCount = getEl('boost-count');
+        const boostCheck = getEl('boost-check');
+
+        if (matchProgress && matchCount) {
+            const progress = (playerData.tasks.matches / 10) * 100;
+            matchProgress.style.width = `${Math.min(progress, 100)}%`;
+            matchCount.textContent = `${playerData.tasks.matches}/10`;
+            if (playerData.tasks.matches >= 10) {
+                matchCheck.style.display = 'inline';
+            }
+        }
+
+        if (winProgress && winCount) {
+            const progress = (playerData.tasks.wins / 5) * 100;
+            winProgress.style.width = `${Math.min(progress, 100)}%`;
+            winCount.textContent = `${playerData.tasks.wins}/5`;
+            if (playerData.tasks.wins >= 5) {
+                winCheck.style.display = 'inline';
+            }
+        }
+
+        if (boostProgress && boostCount) {
+            const progress = (playerData.tasks.boosts / 1) * 100;
+            boostProgress.style.width = `${Math.min(progress, 100)}%`;
+            boostCount.textContent = `${playerData.tasks.boosts}/1`;
+            if (playerData.tasks.boosts >= 1) {
+                boostCheck.style.display = 'inline';
+            }
+        }
+    }
 
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', init);
